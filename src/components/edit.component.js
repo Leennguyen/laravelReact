@@ -1,68 +1,85 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
 import { previewImg } from "../utils/image.util";
+import { URL_IMAGES } from "../utils/contants";
 
-
-export default function CreateCar() {
+export default function EditUser() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [nameCar, setNameCar] = useState("");
-  const [price, setPrice] = useState("");
-  const [img, setImg] = useState();
+const [car, setCar] = useState({
+    nameCar: "",
+    price: 0,
+    imgLink: "",
+    img: null
+})
   const [validationError, setValidationError] = useState({});
 
-  const changeHandler = (event) => {
-    const img = event.target.files[0];
-    setImg(img);
-    previewImg(img);
+  useEffect(() => {
+    fetchProduct();
+  }, []);
+
+  const fetchProduct = async () => {
+    await axios
+      .get(`http://localhost:8000/api/cars/${id}`)
+      .then(({data}) => {
+        console.log(data);
+        const {name_car, price, img} = data
+        setCar({...car, nameCar: name_car, price, imgLink: img})
+      })
+      .catch(e => {
+        Swal.fire({
+          text: e.message,
+          icon: "error",
+        });
+      });
   };
 
-  const createCar = async (e) => {
+  const changeHandler = (e) => {
+    setCar({...car, [e.target.name]: e.target.value})
+  }
+  const changeImageHandler = (event) => {
+    const img = event.target.files[0]
+    setCar({...car, img});
+    previewImg(img)
+  };
+
+  const updateProduct = async (e) => {
     e.preventDefault();
 
     const formData = new FormData();
-
-    formData.append("nameCar", nameCar);
-    formData.append("price", price);
-    formData.append("img", img);
-
-    const res = await axios.post(`http://127.0.0.1:8000/api/cars`, formData);
-    //   .then(({ data }) => {
-    //     Swal.fire({
-    //       icon: "success",
-    //       text: data.message,
-    //     });
-    //     navigate("/");
-    //   })
-    //   .catch(({ response }) => {
-    //     if (response.status === 422) {
-    //       setValidationError(response.data.errors);
-    //     } else {
-    //       Swal.fire({
-    //         text: response.data.message,
-    //         icon: "error",
-    //       });
-    //     }
-    //   });
-    console.log(res);
-    if (res.status === 200) {
-      Swal.fire({
-        icon: "success",
-        text: res.data.message,
-      });
-      navigate("/cars");
-      return;
+    formData.append("_method", "PATCH");
+    formData.append("nameCar", car.nameCar);
+    formData.append("price", car.price);
+    if (car.img !== null) {
+      formData.append("img", car.img);
     }
-    Swal.fire({
-      text: res.statusText,
-      icon: "error",
-    });
+
+    await axios
+      .post(`http://localhost:8000/api/cars/${id}`, formData)
+      .then(({ data }) => {
+        Swal.fire({
+          icon: "success",
+          text: data.message,
+        });
+        navigate("/cars");
+      })
+      .catch(({ response }) => {
+        if (response.status === 422) {
+          setValidationError(response.data.errors);
+        } else {
+          Swal.fire({
+            text: response.data.message,
+            icon: "error",
+          });
+        }
+      });
   };
 
   return (
@@ -71,7 +88,7 @@ export default function CreateCar() {
         <div className="col-12 col-sm-12 col-md-6">
           <div className="card">
             <div className="card-body">
-              <h4 className="card-title">Create Car</h4>
+              <h4 className="card-title">Update Product</h4>
               <hr />
               <div className="form-wrapper">
                 {Object.keys(validationError).length > 0 && (
@@ -89,17 +106,16 @@ export default function CreateCar() {
                     </div>
                   </div>
                 )}
-                <Form encType="mutilpart/form-data" onSubmit={createCar}>
+                <Form onSubmit={updateProduct}>
                   <Row>
                     <Col>
                       <Form.Group controlId="nameCar">
                         <Form.Label>Name</Form.Label>
                         <Form.Control
                           type="text"
-                          value={nameCar}
-                          onChange={(event) => {
-                            setNameCar(event.target.value);
-                          }}
+                          value={car.nameCar}
+                          name="nameCar"
+                          onChange={changeHandler}
                         />
                       </Form.Group>
                     </Col>
@@ -111,10 +127,9 @@ export default function CreateCar() {
                         <Form.Control
                           as="textarea"
                           rows={3}
-                          value={price}
-                          onChange={(event) => {
-                            setPrice(event.target.value);
-                          }}
+                          value={car.price}
+                          name="price"
+                          onChange={changeHandler}
                         />
                       </Form.Group>
                     </Col>
@@ -123,16 +138,11 @@ export default function CreateCar() {
                     <Col>
                       <Form.Group controlId="img" className="mb-3">
                         <Form.Label>Image</Form.Label>
-                        <Form.Control type="file" onChange={changeHandler} />
+                        <Form.Control type="file" onChange={changeImageHandler} />
                       </Form.Group>
                     </Col>
                     <Col sm={3}>
-                      <img
-                        src=""
-                        id="preview-img"
-                        alt=""
-                        style={{ width: "8rem" }}
-                      />
+                        <img src={URL_IMAGES + car.imgLink} id="preview-img" alt="" style={{width: "8rem"}} />
                     </Col>
                   </Row>
                   <Button
@@ -142,7 +152,7 @@ export default function CreateCar() {
                     block="block"
                     type="submit"
                   >
-                    Save
+                    Update
                   </Button>
                 </Form>
               </div>
@@ -153,4 +163,3 @@ export default function CreateCar() {
     </div>
   );
 }
-

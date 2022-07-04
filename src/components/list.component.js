@@ -77,12 +77,12 @@ export default function List() {
                                                 <td>{car.name_car}</td>
                                                 <td>{car.price}</td>
                                                 <td>
-                                                    <img width="50px" src={`http://localhost:8000/images/${car.img}`} />
+                                                    <img width="50px" alt="" src={`http://localhost:8000/images/${car.img}`} />
                                                 </td>
                                                 <td>
-                                                    {/* <Link to={`/Car/edit/${car.id}`} className='btn btn-success me-2'>
+                                                    <Link to={`/Car/edit/${car.id}`} className='btn btn-success me-2'>
                                                         Edit
-                                                    </Link> */}
+                                                    </Link>
                                                     <Button variant="danger" onClick={()=>deleteCar(car.id)}>
                                                         Delete
                                                     </Button>

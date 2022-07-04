@@ -7,7 +7,7 @@ import "bootstrap/dist/css/bootstrap.css";
 
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
-//import EditCar from "./components/edit.component";
+import EditCar from "./components/edit.component";
 import CarList from "./components/list.component";
 import CreateCar from "./components/create.component";
 
@@ -16,7 +16,7 @@ function App() {
     <Router>
       <Navbar bg="primary">
         <Container>
-          <Link to={"/"} className="navbar-brand text-white">
+          <Link to={"/cars"} className="navbar-brand text-white">
             Car
           </Link>
         </Container>
@@ -27,7 +27,7 @@ function App() {
           <Col md={12}>
             <Routes>
               <Route path="/car/create" element={<CreateCar />} />
-              {/*<Route path="/car/edit/:id" element={<EditCar />} /> */}
+              <Route path="/car/edit/:id" element={<EditCar />} />
               <Route exact path="/cars" element={<CarList />} />
             </Routes>
           </Col>

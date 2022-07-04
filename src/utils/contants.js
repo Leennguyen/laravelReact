@@ -1,0 +1,1 @@
+export const URL_IMAGES = "http://localhost:8000/images/"
